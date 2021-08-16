@@ -244,13 +244,13 @@ ScrollPicker.defaultProps = {
   onMomentumScrollEnd: () => {},
   onScrollEndDrag: () => {},
   itemTextStyle: {
-    fontSize: 20,
+    fontSize: 19,
     lineHeight: 26,
     textAlign: "center",
     color: "rgba(222, 35, 60, 0.3)",
   },
   activeItemTextStyle: {
-    fontSize: 20,
+    fontSize: 19,
     lineHeight: 26,
     textAlign: "center",
     color: "#DE233C",
