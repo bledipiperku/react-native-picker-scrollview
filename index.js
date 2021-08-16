@@ -1,54 +1,65 @@
-import React from 'react';
-import styled from 'styled-components';
-import {
-  View,
-  Text,
-  ScrollView,
-  Dimensions,
-  Platform,
-} from 'react-native';
-import PropTypes from 'prop-types';
+import React from "react";
+import styled from "styled-components";
+import { View, Text, ScrollView, Platform } from "react-native";
+import PropTypes from "prop-types";
 
 const Container = styled.View`
-  height: ${props => props.wrapperHeight};
+  height: ${(props) => props.wrapperHeight};
   flex: 1;
   overflow: hidden;
   align-self: center;
-  width: ${props => props.wrapperWidth};
-  background-color: ${props => props.wrapperBackground};
+  width: ${(props) => props.wrapperWidth};
+  background-color: ${(props) => props.wrapperBackground};
 `;
+
 export const HighLightView = styled.View`
   position: absolute;
-  top: ${props => (props.wrapperHeight - props.itemHeight) / 2};
-  height: ${props => props.itemHeight};
-  width: ${props => props.highlightWidth};
-  border-top-color: ${props => props.highlightColor};
-  border-bottom-color: ${props => props.highlightColor};
-  border-top-width: ${props => props.highlightBorderWidth}px;
-  border-bottom-width: ${props => props.highlightBorderWidth}px;
+  top: ${(props) => (props.wrapperHeight - props.itemHeight) / 2};
+  height: ${(props) => props.itemHeight};
+  width: ${(props) => props.highlightWidth};
+  border-top-color: ${(props) => props.highlightColor};
+  border-bottom-color: ${(props) => props.highlightColor};
+  border-top-width: ${(props) => props.highlightBorderWidth}px;
+  border-bottom-width: ${(props) => props.highlightBorderWidth}px;
 `;
+
 export const SelectedItem = styled.View`
   height: 30px;
   justify-content: center;
   align-items: center;
-  height: ${props => props.itemHeight};
+  height: ${(props) => props.itemHeight};
 `;
-const deviceWidth = Dimensions.get('window').width;
+
+export const ItemText = styled.Text`
+  color: ${(props) => props.color};
+  font-size: 20px;
+  line-height: 26px;
+  text-align: center;
+`;
+
 export default class ScrollPicker extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
     this.onMomentumScrollBegin = this.onMomentumScrollBegin.bind(this);
     this.onMomentumScrollEnd = this.onMomentumScrollEnd.bind(this);
     this.onScrollBeginDrag = this.onScrollBeginDrag.bind(this);
     this.onScrollEndDrag = this.onScrollEndDrag.bind(this);
+
+    this.renderItem = (this.props.renderItem || this.renderItemDefault).bind(
+      this
+    );
+
     this.state = {
       selectedIndex: 1,
-    }
+    };
   }
 
   componentDidMount() {
-    if (typeof this.props.selectedIndex !== 'undefined') {
-      this.scrollToIndex(this.props.selectedIndex);
+    if (this.props.selectedIndex !== undefined) {
+      setTimeout(() => {
+        this.scrollToIndex(this.props.selectedIndex);
+      }, 0);
     }
   }
 
@@ -59,15 +70,21 @@ export default class ScrollPicker extends React.Component {
   }
 
   render() {
-    const {header, footer} = this.renderPlaceHolder();
+    const { header, footer } = this.renderPlaceHolder();
+
     return (
-      <Container wrapperHeight={this.props.wrapperHeight} wrapperWidth={this.props.wrapperWidth}
-                 wrapperBackground={this.props.wrapperBackground}>
-        <HighLightView highlightColor={this.props.highlightColor}
-                       highlightWidth={this.props.highlightWidth}
-                       wrapperHeight={this.props.wrapperHeight}
-                       itemHeight={this.props.itemHeight}
-                       highlightBorderWidth={this.props.highlightBorderWidth}/>
+      <Container
+        wrapperHeight={this.props.wrapperHeight}
+        wrapperWidth={this.props.wrapperWidth}
+        wrapperBackground={this.props.wrapperBackground}
+      >
+        <HighLightView
+          highlightColor={this.props.highlightColor}
+          highlightWidth={this.props.highlightWidth}
+          wrapperHeight={this.props.wrapperHeight}
+          itemHeight={this.props.itemHeight}
+          highlightBorderWidth={this.props.highlightBorderWidth}
+        />
         <ScrollView
           ref={(sview) => {
             this.sview = sview;
@@ -81,7 +98,7 @@ export default class ScrollPicker extends React.Component {
           onScrollEndDrag={this.onScrollEndDrag}
         >
           {header}
-          {this.props.dataSource.map(this.renderItem.bind(this))}
+          {this.props.dataSource.map(this.renderItem)}
           {footer}
         </ScrollView>
       </Container>
@@ -90,14 +107,25 @@ export default class ScrollPicker extends React.Component {
 
   renderPlaceHolder() {
     const height = (this.props.wrapperHeight - this.props.itemHeight) / 2;
-    const header = <View style={{height, flex: 1}}></View>;
-    const footer = <View style={{height, flex: 1}}></View>;
-    return {header, footer};
+    const header = <View style={{ height, flex: 1 }}></View>;
+    const footer = <View style={{ height, flex: 1 }}></View>;
+    return { header, footer };
   }
 
-  renderItem(data, index) {
+  renderItemDefault(data, index) {
     const isSelected = index === this.state.selectedIndex;
-    const item = <Text style={isSelected ? this.props.activeItemTextStyle : this.props.itemTextStyle}>{data}</Text>;
+
+    const item = (
+      <ItemText
+        color={
+          isSelected === true
+            ? this.props.activeItemColor
+            : this.props.itemColor
+        }
+      >
+        {data}
+      </ItemText>
+    );
 
     return (
       <SelectedItem key={index} itemHeight={this.props.itemHeight}>
@@ -116,11 +144,11 @@ export default class ScrollPicker extends React.Component {
     const verticalElem = selectedIndex * h;
     if (verticalElem !== verticalY) {
       // using scrollTo in ios, onMomentumScrollEnd will be invoked
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === "ios") {
         this.isScrollTo = true;
       }
       if (this.sview) {
-        this.sview.scrollTo({y: verticalElem});
+        this.sview.scrollTo({ y: verticalElem });
       }
     }
     if (this.state.selectedIndex === selectedIndex) {
@@ -138,7 +166,7 @@ export default class ScrollPicker extends React.Component {
 
   onScrollBeginDrag() {
     this.dragStarted = true;
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === "ios") {
       this.isScrollTo = false;
     }
     if (this.timer) {
@@ -160,14 +188,11 @@ export default class ScrollPicker extends React.Component {
     if (this.timer) {
       clearTimeout(this.timer);
     }
-    this.timer = setTimeout(
-      () => {
-        if (!this.momentumStarted && !this.dragStarted) {
-          this.scrollFix(element, 'timeout');
-        }
-      },
-      10,
-    );
+    this.timer = setTimeout(() => {
+      if (!this.momentumStarted && !this.dragStarted) {
+        this.scrollFix(element, "timeout");
+      }
+    }, 10);
   }
 
   onMomentumScrollBegin() {
@@ -192,11 +217,12 @@ export default class ScrollPicker extends React.Component {
     const y = this.props.itemHeight * ind;
     setTimeout(() => {
       if (this.sview) {
-        this.sview.scrollTo({y});
+        this.sview.scrollTo({ y });
       }
     }, 0);
   }
 }
+
 ScrollPicker.propTypes = {
   style: PropTypes.object,
   dataSource: PropTypes.array,
@@ -215,19 +241,28 @@ ScrollPicker.propTypes = {
   onMomentumScrollEnd: PropTypes.func,
   onScrollEndDrag: PropTypes.func,
 };
+
 ScrollPicker.defaultProps = {
   dataSource: [1, 2, 3],
   itemHeight: 60,
-  wrapperBackground: '#FFFFFF',
+  wrapperBackground: "#FFFFFF",
   wrapperHeight: 180,
   wrapperWidth: 150,
-  highlightWidth: deviceWidth,
+  highlightWidth: "100%",
   highlightBorderWidth: 2,
-  highlightColor: '#333',
-  onMomentumScrollEnd: () => {
+  highlightColor: "#333",
+  onMomentumScrollEnd: () => {},
+  onScrollEndDrag: () => {},
+  itemTextStyle: {
+    fontSize: 20,
+    lineHeight: 26,
+    textAlign: "center",
+    color: "rgba(222, 35, 60, 0.3)",
   },
-  onScrollEndDrag: () => {
+  activeItemTextStyle: {
+    fontSize: 20,
+    lineHeight: 26,
+    textAlign: "center",
+    color: "#DE233C",
   },
-  itemTextStyle: {fontSize: 20, lineHeight: 26, textAlign: 'center', color: '#B4B4B4'},
-  activeItemTextStyle: {fontSize: 20, lineHeight: 26, textAlign: 'center', color: '#222121'}
 };
