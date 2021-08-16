@@ -1,65 +1,61 @@
 import React from "react";
-import styled from "styled-components";
-import { View, Text, ScrollView, Platform } from "react-native";
+import { View, Text, ScrollView, Dimensions, Platform } from "react-native";
 import PropTypes from "prop-types";
 
-const Container = styled.View`
-  height: ${(props) => props.wrapperHeight};
-  flex: 1;
-  overflow: hidden;
-  align-self: center;
-  width: ${(props) => props.wrapperWidth};
-  background-color: ${(props) => props.wrapperBackground};
-`;
+const Container = (props) => {
+  const style = {
+    height: props.wrapperHeight,
+    flex: 1,
+    overflow: "hidden",
+    alignSelf: "center",
+    width: props.wrapperWidth,
+    backgroundColor: props.wrapperBackground,
+  };
+  return <View style={style}>{props.children}</View>;
+};
 
-export const HighLightView = styled.View`
-  position: absolute;
-  top: ${(props) => (props.wrapperHeight - props.itemHeight) / 2};
-  height: ${(props) => props.itemHeight};
-  width: ${(props) => props.highlightWidth};
-  border-top-color: ${(props) => props.highlightColor};
-  border-bottom-color: ${(props) => props.highlightColor};
-  border-top-width: ${(props) => props.highlightBorderWidth}px;
-  border-bottom-width: ${(props) => props.highlightBorderWidth}px;
-`;
+export const HighLightView = (props) => {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        top: (props.wrapperHeight - props.itemHeight) / 2,
+        height: props.itemHeight,
+        width: props.highlightWidth,
+        borderTopColor: props.highlightColor,
+        borderBottomColor: props.highlightColor,
+        borderTopWidth: props.highlightBorderWidth,
+        borderBottomWidth: props.highlightBorderWidth,
+      }}
+    />
+  );
+};
 
-export const SelectedItem = styled.View`
-  height: 30px;
-  justify-content: center;
-  align-items: center;
-  height: ${(props) => props.itemHeight};
-`;
+export const SelectedItem = (props) => {
+  const style = {
+    height: props.itemHeight,
+    justifyContent: "center",
+    alignItems: "center",
+  };
+  return <View style={style}>{props.children}</View>;
+};
 
-export const ItemText = styled.Text`
-  color: ${(props) => props.color};
-  font-size: 20px;
-  line-height: 26px;
-  text-align: center;
-`;
-
+const deviceWidth = Dimensions.get("window").width;
 export default class ScrollPicker extends React.Component {
-  constructor(props) {
-    super(props);
-
+  constructor() {
+    super();
     this.onMomentumScrollBegin = this.onMomentumScrollBegin.bind(this);
     this.onMomentumScrollEnd = this.onMomentumScrollEnd.bind(this);
     this.onScrollBeginDrag = this.onScrollBeginDrag.bind(this);
     this.onScrollEndDrag = this.onScrollEndDrag.bind(this);
-
-    this.renderItem = (this.props.renderItem || this.renderItemDefault).bind(
-      this
-    );
-
     this.state = {
       selectedIndex: 1,
     };
   }
 
   componentDidMount() {
-    if (this.props.selectedIndex !== undefined) {
-      setTimeout(() => {
-        this.scrollToIndex(this.props.selectedIndex);
-      }, 0);
+    if (this.props.selectedIndex !== null) {
+      this.scrollToIndex(this.props.selectedIndex);
     }
   }
 
@@ -71,7 +67,6 @@ export default class ScrollPicker extends React.Component {
 
   render() {
     const { header, footer } = this.renderPlaceHolder();
-
     return (
       <Container
         wrapperHeight={this.props.wrapperHeight}
@@ -98,7 +93,7 @@ export default class ScrollPicker extends React.Component {
           onScrollEndDrag={this.onScrollEndDrag}
         >
           {header}
-          {this.props.dataSource.map(this.renderItem)}
+          {this.props.dataSource.map(this.renderItem.bind(this))}
           {footer}
         </ScrollView>
       </Container>
@@ -112,19 +107,16 @@ export default class ScrollPicker extends React.Component {
     return { header, footer };
   }
 
-  renderItemDefault(data, index) {
+  renderItem(data, index) {
     const isSelected = index === this.state.selectedIndex;
-
     const item = (
-      <ItemText
-        color={
-          isSelected === true
-            ? this.props.activeItemColor
-            : this.props.itemColor
+      <Text
+        style={
+          isSelected ? this.props.activeItemTextStyle : this.props.itemTextStyle
         }
       >
         {data}
-      </ItemText>
+      </Text>
     );
 
     return (
@@ -222,7 +214,6 @@ export default class ScrollPicker extends React.Component {
     }, 0);
   }
 }
-
 ScrollPicker.propTypes = {
   style: PropTypes.object,
   dataSource: PropTypes.array,
@@ -234,19 +225,18 @@ ScrollPicker.propTypes = {
   wrapperBackground: PropTypes.string,
   wrapperWidth: PropTypes.number,
   wrapperHeight: PropTypes.number,
-  highlightWidth: PropTypes.number,
+  highlightWidth: PropTypes.string,
   highlightBorderWidth: PropTypes.number,
   itemTextStyle: PropTypes.object,
   activeItemTextStyle: PropTypes.object,
   onMomentumScrollEnd: PropTypes.func,
   onScrollEndDrag: PropTypes.func,
 };
-
 ScrollPicker.defaultProps = {
   dataSource: [1, 2, 3],
   itemHeight: 60,
   wrapperBackground: "#FFFFFF",
-  wrapperHeight: 180,
+  wrapperHeight: 200,
   wrapperWidth: 150,
   highlightWidth: "100%",
   highlightBorderWidth: 2,
