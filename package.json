@@ -1,6 +1,6 @@
 {
   "name": "react-native-scroll-picker-wheel",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a pure js picker, each option item customizable",
   "main": "index.js",
   "scripts": {
